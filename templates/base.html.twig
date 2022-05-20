@@ -15,7 +15,9 @@
             content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
 
-    <title>Dashboard - Analytics | Sneat - Bootstrap 5 HTML Admin Template - Pro</title>
+    <title>
+        {% block title %}Dashboard - Analytics | Sneat - Bootstrap 5 HTML Admin Template - Pro{% endblock %}
+    </title>
 
     <meta name="description" content="" />
 
@@ -61,7 +63,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
             <div class="app-brand demo">
-                <a href="index.html" class="app-brand-link">
+                <a href="{{ path('app_dashboard') }}" class="app-brand-link">
                     <span class="app-brand-text demo menu-text fw-bolder ms-2">CMS Tools</span>
                 </a>
 
@@ -75,7 +77,7 @@
             <ul class="menu-inner py-1">
                 <!-- Dashboard -->
                 <li class="menu-item active">
-                    <a href="#" class="menu-link">
+                    <a href="{{ path('app_dashboard') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-home-circle"></i>
                         <div data-i18n="Analytics">Dashboard</div>
                     </a>
