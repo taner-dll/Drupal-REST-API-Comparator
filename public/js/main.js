@@ -132,7 +132,6 @@ let menu, animate;
         $('.dashboard').addClass('active');
       }
       return false;
-
     }else{
       if (pathEnd === currentPathEnd){
         $('.menu-item .'+currentPathEnd).addClass('active');
