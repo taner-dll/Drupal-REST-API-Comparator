@@ -17,4 +17,14 @@ class ComparisonController extends AbstractController
             'controller_name' => 'ComparisonController',
         ]);
     }
+
+    /**
+     * @Route("/comparison/contents", name="app_comparison_contents")
+     */
+    public function contents(): Response
+    {
+        return $this->render('comparison/contents.html.twig', [
+            'controller_name' => 'ComparisonController',
+        ]);
+    }
 }
