@@ -76,8 +76,8 @@
 
             <ul class="menu-inner py-1">
                 <!-- Dashboard -->
-                <li class="menu-item active">
-                    <a href="{{ path('app_dashboard') }}" class="menu-link">
+                <li class="menu-item">
+                    <a href="{{ path('app_dashboard') }}" class="menu-link dashboard">
                         <i class="menu-icon tf-icons bx bx-home-circle"></i>
                         <div data-i18n="Analytics">Dashboard</div>
                     </a>
@@ -85,18 +85,18 @@
 
                 <!-- Layouts -->
                 <li class="menu-item">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <a href="#" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-transfer"></i>
                         <div data-i18n="Layouts">Comparison</div>
                     </a>
 
                     <ul class="menu-sub">
-                        <li class="menu-item">
+                        <li class="menu-item translations">
                             <a href="{{ path('app_comparison_translations') }}" class="menu-link">
                                 <div data-i18n="Without menu">Translations</div>
                             </a>
                         </li>
-                        <li class="menu-item">
+                        <li class="menu-item contents">
                             <a href="{{ path('app_comparison_contents') }}" class="menu-link">
                                 <div data-i18n="Without navbar">Contents</div>
                             </a>
@@ -167,5 +167,7 @@
 
 <!-- Place this tag in your head or just before your close body tag. -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
 </body>
 </html>

@@ -115,4 +115,23 @@ let menu, animate;
 
   // Auto update menu collapsed/expanded based on the themeConfig
   window.Helpers.setCollapsed(true, false);
+
+
+  // Add active class to current menu
+  let path = window.location.href;
+  let pathEnd = path.split('/').filter(Boolean).pop();
+
+  $('.menu-sub > .menu-item').find('a').each(function() {
+
+    let currentPathEnd = $(this).attr('href').split('/').filter(Boolean).pop();
+
+    if (pathEnd === currentPathEnd){
+      $('.menu-item .'+currentPathEnd).addClass('active');
+      let toggle = $('.menu-item .'+currentPathEnd).parent().parent();
+      //toggle.children('a').click();
+      toggle.addClass('open');
+    }
+  });
+
+
 })();
