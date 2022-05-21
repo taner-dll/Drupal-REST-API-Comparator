@@ -121,15 +121,26 @@ let menu, animate;
   let path = window.location.href;
   let pathEnd = path.split('/').filter(Boolean).pop();
 
-  $('.menu-sub > .menu-item').find('a').each(function() {
+
+
+  $('.menu-item').find('a').each(function() {
 
     let currentPathEnd = $(this).attr('href').split('/').filter(Boolean).pop();
 
-    if (pathEnd === currentPathEnd){
-      $('.menu-item .'+currentPathEnd).addClass('active');
-      let toggle = $('.menu-item .'+currentPathEnd).parent().parent();
-      //toggle.children('a').click();
-      toggle.addClass('open');
+    if (pathEnd === 'dashboard'){
+      if (pathEnd === currentPathEnd){
+        $('.dashboard').addClass('active');
+      }
+      return false;
+
+    }else{
+      if (pathEnd === currentPathEnd){
+        $('.menu-item .'+currentPathEnd).addClass('active');
+        let toggle = $('.menu-item .'+currentPathEnd).parent().parent();
+        //toggle.children('a').click();
+        toggle.addClass('open');
+        toggle.addClass('active');
+      }
     }
   });
 
