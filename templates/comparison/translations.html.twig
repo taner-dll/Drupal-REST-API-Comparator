@@ -9,14 +9,125 @@
         <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Comparison /</span> Translations</h4>
 
         <div class="col-md-12 col-lg-12">
+
+            <div class="row">
+
+                <div class="col-xxl">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0">Source</h5>
+                            <small class="text-muted float-end"></small>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label" for="source_url">URL:</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control"
+                                               id="source_url"
+                                               value="https://rba.content-stage.crane.aero/web/en/api/property-file/ibe/en"
+                                               placeholder="">
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xxl">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0">Target</h5>
+                            <small class="text-muted float-end"></small>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label" for="target_url">URL:</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control"
+                                               id="target_url"
+                                               value="https://rba.resource.crane.aero/web/en/api/property-file/ibe/en"
+                                               placeholder="">
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
             <div class="card text-center mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Translations</h5>
-                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                    <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">Compare translations between source and target URLs.</p>
+                    <a href="#" class="btn btn-primary" id="btn_start">Start</a>
                 </div>
             </div>
+
         </div>
     </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script type="application/javascript">
+
+        // Start Translation key comparison
+        let btnStart = $('#btn_start');
+        let route = Routing.generate('app_comparison_compare_translations');
+
+        let sourceURL = $('#source_url');
+        let targetURL = $('#target_url');
+
+
+
+        btnStart.on('click', () => {
+
+            $.ajax({
+                url: route,
+                type: "POST",
+                dataType: "json",
+                data: {
+                    source_url: sourceURL.val(),
+                    target_url: targetURL.val()
+                },
+                statusCode: {
+                    /**
+                     * Response Manipulation
+                     * @param responseObject
+                     * @param textStatus
+                     * @param jqXHR
+                     */
+                    404: function (responseObject, textStatus, jqXHR) {
+                        // No content found (404)
+                        // This code will be executed if the server returns a 404 response
+                    },
+                    503: function (responseObject, textStatus, errorThrown) {
+                        // Service Unavailable (503)
+                        // This code will be executed if the server returns a 503 response
+                    },
+                    200: function (responseObject, textStatus, errorThrown) {
+                        //console.log(responseObject + textStatus + errorThrown)
+
+
+                    }
+                }
+            }).done(function (data) {
+                //response text
+                //console.log(data);
+            }).fail(function (jqXHR, textStatus) {
+                console.log('Something went wrong: ' + textStatus);
+            }).always(function (jqXHR, textStatus) {
+                //console.log('Ajax request was finished')
+            });
+
+        });
+
+    </script>
 
 {% endblock %}

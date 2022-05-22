@@ -121,8 +121,6 @@ let menu, animate;
   let path = window.location.href;
   let pathEnd = path.split('/').filter(Boolean).pop();
 
-
-
   $('.menu-item').find('a').each(function() {
 
     let currentPathEnd = $(this).attr('href').split('/').filter(Boolean).pop();
@@ -142,6 +140,9 @@ let menu, animate;
       }
     }
   });
+
+
+
 
 
 })();

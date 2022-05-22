@@ -159,6 +159,10 @@
 <!-- Vendors JS -->
 <script src="{{ asset('vendor/libs/apex-charts/apexcharts.js') }}"></script>
 
+
+<script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
+<script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+
 <!-- Main JS -->
 <script src="{{ asset('js/main.js') }}"></script>
 
@@ -168,6 +172,10 @@
 <!-- Place this tag in your head or just before your close body tag. -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
 
+
+
+
+{% block js %}{% endblock %}
 
 </body>
 </html>
