@@ -49,11 +49,50 @@ class ComparisonController extends AbstractController
             $sourceURL
         );
 
+        $responseTarget = $this->client->request(
+            'GET',
+            $targetURL
+        );
+
         $source = $responseSource->toArray();
+        $target = $responseTarget->toArray();
 
-        dump($source);exit;
 
-        return new JsonResponse($responseSource->getStatusCode(), $responseSource->getStatusCode());
+        $translations = [];
+        foreach ($target as $item => $value) {
+            if (!array_key_exists($item, $source)):
+                $translations[] = [
+                    'type' => 'missing_key',
+                    'key' => $item,
+                    'source_value' => '?',
+                    'target_value' => $value
+                ];
+            else:
+                if ($source[$item] !== $value):
+                    $translations[] = [
+                        'type' => 'changed_value',
+                        'key' => $item,
+                        'source_value' => $source[$item],
+                        'target_value' => $value
+                    ];
+                endif;
+            endif;
+        }
+
+        foreach ($source as $item => $value) {
+
+            if (!array_key_exists($item, $target)):
+                $translations[] = [
+                    'type' => 'missing_key',
+                    'key' => $item,
+                    'source_value' => $value,
+                    'target_value' => '?'
+                ];
+            endif;
+
+        }
+
+        return new JsonResponse($translations, $responseSource->getStatusCode());
 
     }
 
