@@ -2,11 +2,16 @@
 
 namespace App\Controller;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Worksheet;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -15,6 +20,7 @@ class ComparisonController extends AbstractController
 {
 
     private $client;
+
 
     public function __construct(HttpClientInterface $client)
     {
@@ -37,12 +43,13 @@ class ComparisonController extends AbstractController
      *     options = { "expose" = true })
      * @throws TransportExceptionInterface
      */
-    public function compareTranslations(Request $request): JsonResponse
+    public function compareTranslations(Request $request)
     {
 
 
         $sourceURL = $request->request->get('source_url');
         $targetURL = $request->request->get('target_url');
+
 
         $responseSource = $this->client->request(
             'GET',
@@ -92,7 +99,30 @@ class ComparisonController extends AbstractController
 
         }
 
-        return new JsonResponse($translations, $responseSource->getStatusCode());
+        if ($request->request->get('export_xlsx')==='true'){
+
+//            $spreadsheet = new Spreadsheet();
+//            $sheet = $spreadsheet->getActiveSheet();
+//            $sheet->setCellValue('A1', 'Hello World !');
+//
+//
+//            $writer = new Xlsx($spreadsheet);
+//
+//            $response =  new StreamedResponse(
+//                function () use ($writer) {
+//                    $writer->save('php://output');
+//                }
+//            );
+//            $response->headers->set('Content-Type', 'application/vnd.ms-excel');
+//            $response->headers->set('Content-Disposition', 'attachment;filename="ExportScan.xls"');
+//            $response->headers->set('Cache-Control','max-age=0');
+//            return $response;
+
+        }else{
+            return new JsonResponse($translations, $responseSource->getStatusCode());
+        }
+
+
 
     }
 

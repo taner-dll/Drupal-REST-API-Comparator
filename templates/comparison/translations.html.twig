@@ -10,6 +10,8 @@
 
         <div class="col-md-12 col-lg-12">
 
+{#            <form id="form" method="post" target="_blank" action="{{ path('app_comparison_compare_translations') }}">#}
+
             <div class="row">
 
                 <div class="col-xxl">
@@ -19,18 +21,17 @@
                             <small class="text-muted float-end"></small>
                         </div>
                         <div class="card-body">
-                            <form>
                                 <div class="row mb-3">
                                     <label class="col-sm-2 col-form-label" for="source_url">URL:</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control"
+                                        <input type="text" class="form-control" name="source_url"
                                                id="source_url"
                                                value="https://rba.content-stage.crane.aero/web/en/api/property-file/ibe/en"
                                                placeholder="">
+
+                                        <input type="hidden" name="export_xlsx" value="true" />
                                     </div>
                                 </div>
-
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -42,18 +43,15 @@
                             <small class="text-muted float-end"></small>
                         </div>
                         <div class="card-body">
-                            <form>
                                 <div class="row mb-3">
                                     <label class="col-sm-2 col-form-label" for="target_url">URL:</label>
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control"
-                                               id="target_url"
+                                               id="target_url" name="target_url"
                                                value="http://127.0.0.1/oyas/rba/web/en/api/property-file/ibe/en"
                                                placeholder="">
                                     </div>
                                 </div>
-
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -77,20 +75,48 @@
             </div>
 
             <div class="card">
+
                 <h5 class="card-header">Table Basic</h5>
-                <div class="table-responsive text-nowrap">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Key</th>
-                            <th>Source URL</th>
-                            <th>Target URL</th>
-                        </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0" id="result_table"></tbody>
-                    </table>
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-end mb-2">
+
+                        <div class="demo-inline-spacing">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-icon rounded-pill
+                                    dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" style="">
+                                    <li><a class="dropdown-item" onclick="fnExportXLSX();">
+                                            <i class="bx bxs-file-export"></i> Export to XLSX
+                                        </a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive text-wrap"
+                         style="overflow-x: auto;overflow-y: hidden;">
+
+                        <table class="table" id="table">
+                            <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Source URL</th>
+                                <th>Target URL</th>
+                            </tr>
+                            </thead>
+                            <tbody class="table-border-bottom-0" id="result_table"></tbody>
+                        </table>
+                    </div>
                 </div>
+
+
             </div>
+
 
         </div>
     </div>
@@ -104,6 +130,7 @@
         // Start Translation key comparison
         let btnStart = $('#btn_start');
         let btnClear = $('#btn_clear');
+        let btnXLSX = $('#btn_xlsx');
         let route = Routing.generate('app_comparison_compare_translations');
 
         let sourceURL = $('#source_url');
@@ -111,9 +138,23 @@
 
         let resultTable = $('#result_table');
         let spinner = $('#spinner');
-
+        let exportXLSX = false;
+        let form = $('#form');
 
         btnStart.on('click', () => {
+            compareTranslation(spinner, sourceURL, targetURL, exportXLSX);
+        });
+
+        btnClear.on('click', () => {
+            resultTable.empty();
+        });
+
+        btnXLSX.on('click', () => {
+            form.submit();
+        });
+
+
+        function compareTranslation(spinner, sourceURL, targetURL, exportXLSX) {
 
             spinner.show();
 
@@ -123,7 +164,8 @@
                 dataType: "json",
                 data: {
                     source_url: sourceURL.val(),
-                    target_url: targetURL.val()
+                    target_url: targetURL.val(),
+                    export_xlsx: exportXLSX
                 },
                 statusCode: {
                     /**
@@ -161,9 +203,7 @@
                         '<td>' + v.target_value + '</td></tr>';
 
                 });
-
                 resultTable.html(html);
-
 
 
             }).fail(function (jqXHR, textStatus) {
@@ -174,11 +214,30 @@
                 spinner.hide();
             });
 
-        });
+        }
 
-        btnClear.on('click', () => {
-           resultTable.empty();
-        });
+        function fnExportXLSX()
+        {
+            let table_text="<table>";
+
+
+            table_text=table_text+"<tr>" +
+                '<td></td><td>'+sourceURL.val()+'</td><td>'+targetURL.val()+'</td>' +
+                "</tr>";
+
+            let table = document.getElementById('table'); // id of table
+
+            for(j = 0 ; j < table.rows.length ; j++)
+            {
+                table_text=table_text+table.rows[j].innerHTML+"</tr>";
+            }
+
+            table_text=table_text+"</table>";
+
+            let sa = window.open('data:application/vnd.ms-excel,' + encodeURIComponent(table_text));
+
+            return (sa);
+        }
 
     </script>
 
