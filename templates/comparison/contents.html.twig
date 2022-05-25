@@ -9,14 +9,252 @@
         <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Comparison /</span> Contents</h4>
 
         <div class="col-md-12 col-lg-12">
+
+            {#            <form id="form" method="post" target="_blank" action="{{ path('app_comparison_compare_translations') }}">#}
+
+            <div class="row">
+
+                <div class="col-xxl">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0">Source</h5>
+                            <small class="text-muted float-end"></small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label" for="source_url">URL:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="source_url"
+                                           id="source_url"
+                                           value="https://rba.content-stage.crane.aero/web/en/api/property-file/ibe/en"
+                                           placeholder="">
+
+                                    <input type="hidden" name="export_xlsx" value="true" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xxl">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0">Target</h5>
+                            <small class="text-muted float-end"></small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label" for="target_url">URL:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control"
+                                           id="target_url" name="target_url"
+                                           value="https://rba.resource.crane.aero/web/en/api/property-file/ibe/en"
+                                           placeholder="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
             <div class="card text-center mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Contents</h5>
-                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                    <a href="javascript:void(0)" class="btn btn-primary">Go somewhere</a>
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">Compare translations between source and target URLs.</p>
+                    <a href="#" class="btn btn-primary" id="btn_start">Start Comparison
+                        <span id="spinner" class="spinner-border spinner-border-sm"
+                              style="color: white; display: none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                        </span>
+                    </a>
+                    <a href="#" class="btn btn-secondary" id="btn_clear">Clear</a>
+
+
                 </div>
             </div>
+
+            <div class="card">
+
+                <h5 class="card-header">Table Basic</h5>
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-end mb-2">
+
+                        <div class="demo-inline-spacing">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-icon rounded-pill
+                                    dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" style="">
+                                    <li><a class="dropdown-item" id="btn_xlsx">
+                                            <i class="bx bxs-file-export"></i> Export to XLSX
+                                        </a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive text-wrap"
+                         style="overflow-x: auto;overflow-y: hidden;">
+
+                        <table class="table" id="table">
+                            <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Key</th>
+                                <th>Source URL</th>
+                                <th>Target URL</th>
+                            </tr>
+                            </thead>
+                            <tbody class="table-border-bottom-0" id="result_table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+
+
         </div>
     </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script type="application/javascript">
+
+        $(function () {
+
+            // Start Translation key comparison
+            let btnStart = $('#btn_start');
+            let btnClear = $('#btn_clear');
+            let btnXLSX = $('#btn_xlsx');
+            let route = Routing.generate('app_comparison_compare_translations');
+
+            let sourceURL = $('#source_url');
+            let targetURL = $('#target_url');
+
+            let resultTable = $('#result_table');
+            let spinner = $('#spinner');
+            let exportXLSX = false;
+            let form = $('#form');
+
+            btnStart.on('click', () => {
+                compareTranslation(spinner, sourceURL, targetURL, exportXLSX);
+            });
+
+            btnClear.on('click', () => {
+                resultTable.empty();
+            });
+
+            btnXLSX.on('click', () => {
+                fnExportXLSX();
+            });
+
+
+            function compareTranslation(spinner, sourceURL, targetURL, exportXLSX) {
+
+                spinner.show();
+
+                $.ajax({
+                    url: route,
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        source_url: sourceURL.val(),
+                        target_url: targetURL.val(),
+                        export_xlsx: exportXLSX
+                    },
+                    statusCode: {
+                        /**
+                         * Response Manipulation
+                         * @param responseObject
+                         * @param textStatus
+                         * @param jqXHR
+                         */
+                        404: function (responseObject, textStatus, jqXHR) {
+                            // No content found (404)
+                            // This code will be executed if the server returns a 404 response
+                        },
+                        503: function (responseObject, textStatus, errorThrown) {
+                            // Service Unavailable (503)
+                            // This code will be executed if the server returns a 503 response
+                        }
+                    }
+                }).done(function (data) {
+                    //response text
+                    //console.log(data);
+
+                    let html;
+                    $.each(data, function (k, v) {
+
+                        if (v.type === 'Missing') {
+                            html += '<tr class="table-success">';
+                        }
+
+                        if (v.type === 'Changed') {
+                            html += '<tr class="table-warning">';
+                        }
+
+                        html += '<td>' + v.type + '</td>' +
+                            '<td>' + v.key + '</td>' +
+                            '<td>' + v.source_value + '</td>' +
+                            '<td>' + v.target_value + '</td></tr>';
+
+                    });
+                    resultTable.html(html);
+
+
+                }).fail(function (jqXHR, textStatus) {
+                    console.log('Something went wrong: ' + textStatus);
+
+                }).always(function (jqXHR, textStatus) {
+                    //console.log('Ajax request was finished')
+                    spinner.hide();
+                });
+
+            }
+
+
+            // export from Table to XLSX
+            function fnExportXLSX()
+            {
+                let table_text="<table>";
+
+
+                table_text=table_text+"<tr>" +
+                    '<td></td><td></td><td>'+sourceURL.val()+'</td><td>'+targetURL.val()+'</td>' +
+                    "</tr>";
+
+                let table = document.getElementById('table');
+
+                for(let j = 0 ; j < table.rows.length ; j++)
+                {
+                    table_text=table_text+table.rows[j].innerHTML+"</tr>";
+                }
+
+                table_text=table_text+"</table>";
+
+                let a = document.createElement('a');
+
+                let data_type = 'data:application/vnd.ms-excel';
+                a.href = data_type + ', ' + encodeURIComponent(table_text);
+                a.download = 'download.xls';
+                a.click();
+
+                return (a);
+            }
+
+
+        });
+
+
+
+    </script>
 
 {% endblock %}

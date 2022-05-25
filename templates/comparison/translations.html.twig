@@ -48,7 +48,7 @@
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control"
                                                id="target_url" name="target_url"
-                                               value="http://127.0.0.1/oyas/rba/web/en/api/property-file/ibe/en"
+                                               value="https://rba.resource.crane.aero/web/en/api/property-file/ibe/en"
                                                placeholder="">
                                     </div>
                                 </div>
@@ -89,7 +89,7 @@
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" style="">
-                                    <li><a class="dropdown-item" onclick="fnExportXLSX();">
+                                    <li><a class="dropdown-item" id="btn_xlsx">
                                             <i class="bx bxs-file-export"></i> Export to XLSX
                                         </a></li>
                                 </ul>
@@ -104,6 +104,7 @@
                         <table class="table" id="table">
                             <thead>
                             <tr>
+                                <th>Type</th>
                                 <th>Key</th>
                                 <th>Source URL</th>
                                 <th>Target URL</th>
@@ -127,117 +128,132 @@
 
     <script type="application/javascript">
 
-        // Start Translation key comparison
-        let btnStart = $('#btn_start');
-        let btnClear = $('#btn_clear');
-        let btnXLSX = $('#btn_xlsx');
-        let route = Routing.generate('app_comparison_compare_translations');
+        $(function () {
 
-        let sourceURL = $('#source_url');
-        let targetURL = $('#target_url');
+            // Start Translation key comparison
+            let btnStart = $('#btn_start');
+            let btnClear = $('#btn_clear');
+            let btnXLSX = $('#btn_xlsx');
+            let route = Routing.generate('app_comparison_compare_translations');
 
-        let resultTable = $('#result_table');
-        let spinner = $('#spinner');
-        let exportXLSX = false;
-        let form = $('#form');
+            let sourceURL = $('#source_url');
+            let targetURL = $('#target_url');
 
-        btnStart.on('click', () => {
-            compareTranslation(spinner, sourceURL, targetURL, exportXLSX);
-        });
+            let resultTable = $('#result_table');
+            let spinner = $('#spinner');
+            let exportXLSX = false;
+            let form = $('#form');
 
-        btnClear.on('click', () => {
-            resultTable.empty();
-        });
-
-        btnXLSX.on('click', () => {
-            form.submit();
-        });
-
-
-        function compareTranslation(spinner, sourceURL, targetURL, exportXLSX) {
-
-            spinner.show();
-
-            $.ajax({
-                url: route,
-                type: "POST",
-                dataType: "json",
-                data: {
-                    source_url: sourceURL.val(),
-                    target_url: targetURL.val(),
-                    export_xlsx: exportXLSX
-                },
-                statusCode: {
-                    /**
-                     * Response Manipulation
-                     * @param responseObject
-                     * @param textStatus
-                     * @param jqXHR
-                     */
-                    404: function (responseObject, textStatus, jqXHR) {
-                        // No content found (404)
-                        // This code will be executed if the server returns a 404 response
-                    },
-                    503: function (responseObject, textStatus, errorThrown) {
-                        // Service Unavailable (503)
-                        // This code will be executed if the server returns a 503 response
-                    }
-                }
-            }).done(function (data) {
-                //response text
-                //console.log(data);
-
-                let html;
-                $.each(data, function (k, v) {
-
-                    if (v.type === 'missing_key') {
-                        html += '<tr class="table-success">';
-                    }
-
-                    if (v.type === 'changed_value') {
-                        html += '<tr class="table-warning">';
-                    }
-
-                    html += '<td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>' + v.key + '</strong></td>' +
-                        '<td>' + v.source_value + '</td>' +
-                        '<td>' + v.target_value + '</td></tr>';
-
-                });
-                resultTable.html(html);
-
-
-            }).fail(function (jqXHR, textStatus) {
-                console.log('Something went wrong: ' + textStatus);
-
-            }).always(function (jqXHR, textStatus) {
-                //console.log('Ajax request was finished')
-                spinner.hide();
+            btnStart.on('click', () => {
+                compareTranslation(spinner, sourceURL, targetURL, exportXLSX);
             });
 
-        }
+            btnClear.on('click', () => {
+                resultTable.empty();
+            });
 
-        function fnExportXLSX()
-        {
-            let table_text="<table>";
+            btnXLSX.on('click', () => {
+                fnExportXLSX();
+            });
 
 
-            table_text=table_text+"<tr>" +
-                '<td></td><td>'+sourceURL.val()+'</td><td>'+targetURL.val()+'</td>' +
-                "</tr>";
+            function compareTranslation(spinner, sourceURL, targetURL, exportXLSX) {
 
-            let table = document.getElementById('table'); // id of table
+                spinner.show();
 
-            for(j = 0 ; j < table.rows.length ; j++)
-            {
-                table_text=table_text+table.rows[j].innerHTML+"</tr>";
+                $.ajax({
+                    url: route,
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        source_url: sourceURL.val(),
+                        target_url: targetURL.val(),
+                        export_xlsx: exportXLSX
+                    },
+                    statusCode: {
+                        /**
+                         * Response Manipulation
+                         * @param responseObject
+                         * @param textStatus
+                         * @param jqXHR
+                         */
+                        404: function (responseObject, textStatus, jqXHR) {
+                            // No content found (404)
+                            // This code will be executed if the server returns a 404 response
+                        },
+                        503: function (responseObject, textStatus, errorThrown) {
+                            // Service Unavailable (503)
+                            // This code will be executed if the server returns a 503 response
+                        }
+                    }
+                }).done(function (data) {
+                    //response text
+                    //console.log(data);
+
+                    let html;
+                    $.each(data, function (k, v) {
+
+                        if (v.type === 'Missing') {
+                            html += '<tr class="table-success">';
+                        }
+
+                        if (v.type === 'Changed') {
+                            html += '<tr class="table-warning">';
+                        }
+
+                        html += '<td>' + v.type + '</td>' +
+                            '<td>' + v.key + '</td>' +
+                            '<td>' + v.source_value + '</td>' +
+                            '<td>' + v.target_value + '</td></tr>';
+
+                    });
+                    resultTable.html(html);
+
+
+                }).fail(function (jqXHR, textStatus) {
+                    console.log('Something went wrong: ' + textStatus);
+
+                }).always(function (jqXHR, textStatus) {
+                    //console.log('Ajax request was finished')
+                    spinner.hide();
+                });
+
             }
 
-            table_text=table_text+"</table>";
 
-            let sa = window.open('data:application/vnd.ms-excel,' + encodeURIComponent(table_text));
+            // export from Table to XLSX
+            function fnExportXLSX()
+            {
+                let table_text="<table>";
 
-            return (sa);
-        }
+
+                table_text=table_text+"<tr>" +
+                    '<td></td><td></td><td>'+sourceURL.val()+'</td><td>'+targetURL.val()+'</td>' +
+                    "</tr>";
+
+                let table = document.getElementById('table');
+
+                for(let j = 0 ; j < table.rows.length ; j++)
+                {
+                    table_text=table_text+table.rows[j].innerHTML+"</tr>";
+                }
+
+                table_text=table_text+"</table>";
+
+                let a = document.createElement('a');
+
+                let data_type = 'data:application/vnd.ms-excel';
+                a.href = data_type + ', ' + encodeURIComponent(table_text);
+                a.download = 'download.xls';
+                a.click();
+
+                return (a);
+            }
+
+
+        });
+
+
 
     </script>
 

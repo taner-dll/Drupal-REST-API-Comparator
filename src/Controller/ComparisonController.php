@@ -2,18 +2,12 @@
 
 namespace App\Controller;
 
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Worksheet;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ComparisonController extends AbstractController
@@ -41,9 +35,8 @@ class ComparisonController extends AbstractController
      * @Route("/comparison/compare-translations",
      *     name="app_comparison_compare_translations",
      *     options = { "expose" = true })
-     * @throws TransportExceptionInterface
      */
-    public function compareTranslations(Request $request)
+    public function compareTranslations(Request $request): JsonResponse
     {
 
 
@@ -69,15 +62,15 @@ class ComparisonController extends AbstractController
         foreach ($target as $item => $value) {
             if (!array_key_exists($item, $source)):
                 $translations[] = [
-                    'type' => 'missing_key',
+                    'type' => 'Missing',
                     'key' => $item,
-                    'source_value' => '?',
+                    'source_value' => '',
                     'target_value' => $value
                 ];
             else:
                 if ($source[$item] !== $value):
                     $translations[] = [
-                        'type' => 'changed_value',
+                        'type' => 'Changed',
                         'key' => $item,
                         'source_value' => $source[$item],
                         'target_value' => $value
@@ -90,38 +83,16 @@ class ComparisonController extends AbstractController
 
             if (!array_key_exists($item, $target)):
                 $translations[] = [
-                    'type' => 'missing_key',
+                    'type' => 'Missing',
                     'key' => $item,
                     'source_value' => $value,
-                    'target_value' => '?'
+                    'target_value' => ''
                 ];
             endif;
 
         }
 
-        if ($request->request->get('export_xlsx')==='true'){
-
-//            $spreadsheet = new Spreadsheet();
-//            $sheet = $spreadsheet->getActiveSheet();
-//            $sheet->setCellValue('A1', 'Hello World !');
-//
-//
-//            $writer = new Xlsx($spreadsheet);
-//
-//            $response =  new StreamedResponse(
-//                function () use ($writer) {
-//                    $writer->save('php://output');
-//                }
-//            );
-//            $response->headers->set('Content-Type', 'application/vnd.ms-excel');
-//            $response->headers->set('Content-Disposition', 'attachment;filename="ExportScan.xls"');
-//            $response->headers->set('Cache-Control','max-age=0');
-//            return $response;
-
-        }else{
-            return new JsonResponse($translations, $responseSource->getStatusCode());
-        }
-
+        return new JsonResponse($translations, $responseSource->getStatusCode());
 
 
     }
