@@ -26,7 +26,7 @@
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" name="source_url"
                                            id="source_url"
-                                           value="https://rba.content-stage.crane.aero/web/en/api/property-file/ibe/en"
+                                           value="https://lbt.content-stage.crane.aero/web/api/entities?type=bundle&locale=en"
                                            placeholder="">
 
                                     <input type="hidden" name="export_xlsx" value="true" />
@@ -48,7 +48,7 @@
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control"
                                            id="target_url" name="target_url"
-                                           value="https://rba.resource.crane.aero/web/en/api/property-file/ibe/en"
+                                           value="https://lbt.resource.crane.aero/web/api/entities?type=bundle&locale=en"
                                            placeholder="">
                                 </div>
                             </div>
@@ -61,7 +61,7 @@
             <div class="card text-center mb-3">
                 <div class="card-body">
                     <h5 class="card-title">Description</h5>
-                    <p class="card-text">Compare translations between source and target URLs.</p>
+                    <p class="card-text">Compare contents between source and target URLs.</p>
                     <a href="#" class="btn btn-primary" id="btn_start">Start Comparison
                         <span id="spinner" class="spinner-border spinner-border-sm"
                               style="color: white; display: none" role="status">
@@ -105,7 +105,7 @@
                             <thead>
                             <tr>
                                 <th>Type</th>
-                                <th>Key</th>
+                                <th>Content Type</th>
                                 <th>Source URL</th>
                                 <th>Target URL</th>
                             </tr>
@@ -134,7 +134,7 @@
             let btnStart = $('#btn_start');
             let btnClear = $('#btn_clear');
             let btnXLSX = $('#btn_xlsx');
-            let route = Routing.generate('app_comparison_compare_translations');
+            let route = Routing.generate('app_comparison_compare_contents');
 
             let sourceURL = $('#source_url');
             let targetURL = $('#target_url');
