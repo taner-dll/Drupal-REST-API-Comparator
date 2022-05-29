@@ -63,7 +63,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
             <div class="app-brand demo">
-                <a href="{{ path('app_dashboard') }}" class="app-brand-link">
+                <a href="{{ path('app_comparison_compare_translations') }}" class="app-brand-link">
                     <span class="app-brand-text demo menu-text fw-bolder ms-2">CMS Tools</span>
                 </a>
 
@@ -76,12 +76,12 @@
 
             <ul class="menu-inner py-1">
                 <!-- Dashboard -->
-                <li class="menu-item dashboard">
-                    <a href="{{ path('app_dashboard') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                        <div data-i18n="Analytics">Dashboard</div>
-                    </a>
-                </li>
+{#                <li class="menu-item dashboard">#}
+{#                    <a href="{{ path('app_dashboard') }}" class="menu-link">#}
+{#                        <i class="menu-icon tf-icons bx bx-home-circle"></i>#}
+{#                        <div data-i18n="Analytics">Dashboard</div>#}
+{#                    </a>#}
+{#                </li>#}
 
                 <!-- Layouts -->
                 <li class="menu-item">
@@ -157,6 +157,8 @@
 <script src="{{ asset('vendor/libs/popper/popper.js') }}"></script>
 <script src="{{ asset('vendor/js/bootstrap.js') }}"></script>
 <script src="{{ asset('vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script src="{{ asset('vendor/js/menu.js') }}"></script>
 <!-- endbuild -->

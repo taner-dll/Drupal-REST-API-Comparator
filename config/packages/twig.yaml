@@ -1,5 +1,24 @@
 twig:
     default_path: '%kernel.project_dir%/templates'
+    globals:
+      languages: {
+        'en': 'English',
+        'fr': 'French',
+        'ru': 'Russian',
+        'kk': 'Kazakh',
+        'ko': 'Korean',
+        'ja': 'Japan',
+        'zh-hans': 'Chinese, Simp.',
+        'zh-hant': 'Chinese, Trad.',
+        'ro': 'Romanian'
+      }
+      translation_endpoint_paths: {
+        '/api/property-file/ibe/':'Nibe',
+        '/api/property-file/mobile/':'Mobile',
+        '/api/property-file/errors/':'Errors',
+        '/api/property-file/loyalty/':'Loyalty',
+        '/api/property-file/nationality/':'Nationality'
+      }
 
 when@test:
     twig:
