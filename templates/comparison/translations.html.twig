@@ -26,7 +26,7 @@
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control" name="source_url"
                                                id="source_url"
-                                               value="https://rba.content-stage.crane.aero/web/en/api/property-file/ibe/en"
+                                               value="http://lbt-pp.content-stage.crane.aero/web/api/property-file/ibe/fr"
                                                placeholder="">
 
                                         <input type="hidden" name="export_xlsx" value="true" />
@@ -48,7 +48,7 @@
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control"
                                                id="target_url" name="target_url"
-                                               value="https://rba.resource.crane.aero/web/en/api/property-file/ibe/en"
+                                               value="https://lbt.resource.crane.aero/web/api/property-file/ibe/fr"
                                                placeholder="">
                                     </div>
                                 </div>
@@ -98,8 +98,7 @@
 
                     </div>
 
-                    <div class="table-responsive text-wrap"
-                         style="overflow-x: auto;overflow-y: hidden;">
+                    <div class="table table-responsive">
 
                         <table class="table" id="table">
                             <thead>
@@ -202,9 +201,9 @@
                         }
 
                         html += '<td>' + v.type + '</td>' +
-                            '<td>' + v.key + '</td>' +
-                            '<td>' + v.source_value + '</td>' +
-                            '<td>' + v.target_value + '</td></tr>';
+                            '<td style="word-wrap: break-word;min-width: 160px;max-width: 160px;white-space:normal;">' + v.key + '</td>' +
+                            '<td style="word-wrap: break-word;min-width: 160px;max-width: 160px;white-space:normal;">' + v.source_value + '</td>' +
+                            '<td style="word-wrap: break-word;min-width: 160px;max-width: 160px;white-space:normal;">' + v.target_value + '</td></tr>';
 
                     });
                     resultTable.html(html);

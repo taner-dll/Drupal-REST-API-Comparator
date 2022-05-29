@@ -3,10 +3,17 @@
 namespace App\Controller;
 
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -37,7 +44,7 @@ class ComparisonController extends AbstractController
    *     name="app_comparison_compare_contents",
    *     options = { "expose" = true })
    */
-  public function compareContents(Request $request): JsonResponse
+  public function compareContents(Request $request)
   {
 
 
@@ -60,15 +67,15 @@ class ComparisonController extends AbstractController
     $source = $responseSource->toArray();
     $target = $responseTarget->toArray();
 
-    $type = explode("?type=",$sourceURL);
-    $type = explode("&",$type[1]);
+    $type = explode("?type=", $sourceURL);
+    $type = explode("&", $type[1]);
     $type = $type[0];
 
     //dump($type);exit;
 
     $contents = [];
 
-    if ($type === 'bundle'){
+    if ($type === 'bundle' || $type === 'branded_fare') {
 
       $sourceTitle = [];
       $sourceSearchTerm = [];
@@ -86,32 +93,59 @@ class ComparisonController extends AbstractController
 
           $contents[] = [
             'type' => 'Missing',
-            'key' => $value['type'][0]['target_id'],
+            'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+            'content_type' => $value['type'][0]['target_id'],
             'source_value' => '',
             'target_value' => $target_data
           ];
         else:
+
+          // Title changed?
           if (!in_array($value['title'][0]['value'], $sourceTitle)):
 
             $target_data = 'Title: ' . $value['title'][0]['value'] . ' - ' .
               'Code: ' . $value['field_bundle_code'][0]['value'];
 
             //Aynı UUID'ye sahip source içeriğine ait title'ı getir.
-            $bundleSourceTitle='';
+            $bundleSourceTitle = '';
             foreach ($source as $val) {
               if ($val['uuid'][0]['value'] === $value['uuid'][0]['value']) {
                 $bundleSourceTitle = 'Title: ' . $val['title'][0]['value'] . ' - ' .
-                  'Code: ' . $value['field_bundle_code'][0]['value'];
+                  'Code: ' . $val['field_bundle_code'][0]['value'];
               }
             }
 
             $contents[] = [
               'type' => 'Changed',
-              'key' => $value['type'][0]['target_id'].' ('.$value['uuid'][0]['value'].')',
+              'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+              'content_type' => $value['type'][0]['target_id'],
               'source_value' => $bundleSourceTitle,
               'target_value' => $target_data
             ];
           endif;
+
+
+          // Check Modified
+          foreach ($source as $val) {
+            if ($val['uuid'][0]['value'] === $value['uuid'][0]['value']) {
+
+              if ($val['changed'][0]['value'] !== $value['changed'][0]['value']){
+                $contents[] = [
+                  'type' => 'Modified',
+                  'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+                  'content_type' => $value['type'][0]['target_id'],
+                  'source_value' => 'Title: ' . $val['title'][0]['value'] . ' - '
+                    .'Code: ' . $val['field_bundle_code'][0]['value'] . "\n" . $val['changed'][0]['value'],
+                  'target_value' => 'Title: ' . $value['title'][0]['value'] . ' - '
+                    .'Code: ' . $value['field_bundle_code'][0]['value']."\n" . $value['changed'][0]['value'],
+                ];
+              }
+
+            }
+          }
+
+
+
         endif;
       }
 
@@ -129,7 +163,8 @@ class ComparisonController extends AbstractController
 
           $contents[] = [
             'type' => 'Missing',
-            'key' => $value['type'][0]['target_id'],
+            'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+            'content_type' => $value['type'][0]['target_id'],
             'source_value' => $source_data,
             'target_value' => ''
           ];
@@ -137,7 +172,8 @@ class ComparisonController extends AbstractController
       }
 
 
-    }else{
+    }
+    else { // not bundle
 
       $sourceTitle = [];
       $sourceSearchTerm = [];
@@ -154,17 +190,20 @@ class ComparisonController extends AbstractController
 
           $contents[] = [
             'type' => 'Missing',
-            'key' => $value['type'][0]['target_id'],
+            'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+            'content_type' => $value['type'][0]['target_id'],
             'source_value' => '',
             'target_value' => $target_data
           ];
         else:
+
+          // Title changed?
           if (!in_array($value['title'][0]['value'], $sourceTitle)):
 
             $target_data = 'Title: ' . $value['title'][0]['value'];
 
             //Aynı UUID'ye sahip source içeriğine ait title'ı getir.
-            $sourceTitle='';
+            $sourceTitle = '';
             foreach ($source as $val) {
               if ($val['uuid'][0]['value'] === $value['uuid'][0]['value']) {
                 $sourceTitle = $val['title'][0]['value'];
@@ -173,15 +212,31 @@ class ComparisonController extends AbstractController
 
             $contents[] = [
               'type' => 'Changed',
-              'key' => $value['type'][0]['target_id'].' ('.$value['uuid'][0]['value'].')',
+              'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+              'content_type' => $value['type'][0]['target_id'],
               'source_value' => $sourceTitle,
               'target_value' => $target_data
             ];
-
           endif;
 
-          //TODO Güncellenme tarihleri farklı ise UPDATED bul. renk mavi olabilir.
-          //TODO content type yanında (uuid) belirt.
+          // Check Modified
+          foreach ($source as $val) {
+            if ($val['uuid'][0]['value'] === $value['uuid'][0]['value']) {
+
+              if ($val['changed'][0]['value'] !== $value['changed'][0]['value']){
+                $contents[] = [
+                  'type' => 'Modified',
+                  'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+                  'content_type' => $value['type'][0]['target_id'],
+                  'source_value' => 'Title: ' . $val['title'][0]['value'] . ' - '
+                    .'Code: ' . $val['field_bundle_code'][0]['value'] . "\n" . $val['changed'][0]['value'],
+                  'target_value' => 'Title: ' . $value['title'][0]['value'] . ' - '
+                    .'Code: ' . $value['field_bundle_code'][0]['value']."\n" . $value['changed'][0]['value'],
+                ];
+              }
+
+            }
+          }
         endif;
       }
 
@@ -198,7 +253,8 @@ class ComparisonController extends AbstractController
 
           $contents[] = [
             'type' => 'Missing',
-            'key' => $value['type'][0]['target_id'],
+            'key' => $value['type'][0]['target_id'] . ' (' . $value['uuid'][0]['value'] . ')',
+            'content_type' => $value['type'][0]['target_id'],
             'source_value' => $source_data,
             'target_value' => ''
           ];
@@ -208,6 +264,145 @@ class ComparisonController extends AbstractController
     }
 
 
+    if ($request->request->get('export_xlsx') === 'true') {
+
+
+      $spreadsheet = new Spreadsheet();
+
+      $fontBold = ['font' => ['bold' => true]];
+
+      $sheet = $spreadsheet->getActiveSheet();
+
+      // Sheet Title (Sub Tab)
+      $sheet->setTitle("Content Comparison Results");
+
+      // Header
+      $sheet->mergeCells('A1:D1');
+      $sheet->setCellValue('A1', 'HititCS CMS - Content Comparison Results');
+      $spreadsheet->getActiveSheet()->getStyle('A1')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+      // Column width
+      $spreadsheet->getActiveSheet()->getColumnDimension('A')->setWidth(20);
+      $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(40);
+      $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(50);
+      $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(50);
+
+
+      // Source & Target URLs
+      $sheet->setCellValue('A2', 'SOURCE:');
+      $spreadsheet->getActiveSheet()->getStyle('A2')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('A2')->getAlignment()->setHorizontal('left');
+
+      $sheet->setCellValue('B2', $sourceURL);
+      $spreadsheet->getActiveSheet()->getStyle('B2')->getAlignment()->setHorizontal('left');
+      $sheet->mergeCells('B2:D2');
+
+      $sheet->setCellValue('A3', 'TARGET:');
+      $spreadsheet->getActiveSheet()->getStyle('A3')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('A3')->getAlignment()->setHorizontal('left');
+
+      $sheet->setCellValue('B3', $targetURL);
+      $spreadsheet->getActiveSheet()->getStyle('B3')->getAlignment()->setHorizontal('left');
+      $sheet->mergeCells('B3:D3');
+
+      $spreadsheet->getActiveSheet()
+        ->getStyle('A2:D2')
+        ->getBorders()->getAllBorders()
+        ->setBorderStyle(Border::BORDER_THIN)
+        ->setColor(new Color('000000'));
+
+      $spreadsheet->getActiveSheet()
+        ->getStyle('A3:D3')
+        ->getBorders()->getAllBorders()
+        ->setBorderStyle(Border::BORDER_THIN)
+        ->setColor(new Color('000000'));
+
+
+      // Column headers: TYPE, KEY, SOURCE VALUE, TARGET VALUE
+      $sheet->setCellValue('A5', 'TYPE');
+      $spreadsheet->getActiveSheet()->getStyle('A5')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('A5')->getAlignment()->setHorizontal('center');
+
+      $sheet->setCellValue('B5', 'KEY');
+      $spreadsheet->getActiveSheet()->getStyle('B5')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('B5')->getAlignment()->setHorizontal('center');
+
+      $sheet->setCellValue('C5', 'SOURCE');
+      $spreadsheet->getActiveSheet()->getStyle('C5')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('C5')->getAlignment()->setHorizontal('center');
+
+      $sheet->setCellValue('D5', 'TARGET');
+      $spreadsheet->getActiveSheet()->getStyle('D5')->applyFromArray($fontBold);
+      $spreadsheet->getActiveSheet()->getStyle('D5')->getAlignment()->setHorizontal('center');
+
+      $spreadsheet->getActiveSheet()
+        ->getStyle('A5:D5')
+        ->getBorders()->getAllBorders()
+        ->setBorderStyle(Border::BORDER_THIN)
+        ->setColor(new Color('000000'));
+
+
+      $line = 6;
+      foreach ($contents as $val){
+
+        $sheet->setCellValue('A'.$line, $val['type']);
+        $spreadsheet->getActiveSheet()->getStyle('A'.$line)->getAlignment()->setHorizontal('center');
+
+        if ($val['type']==='Missing')
+          $spreadsheet->getActiveSheet()->getStyle('A'.$line.':D'.$line)
+            ->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('e0ffe3');
+
+        if ($val['type']==='Changed')
+          $spreadsheet->getActiveSheet()->getStyle('A'.$line.':D'.$line)
+            ->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('fbfcc2');
+
+        if ($val['type']==='Modified')
+          $spreadsheet->getActiveSheet()->getStyle('A'.$line.':D'.$line)
+            ->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('adeaff');
+
+
+        $sheet->setCellValue('B'.$line, $val['content_type']);
+        $spreadsheet->getActiveSheet()->getStyle('B'.$line)->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue('C'.$line, $val['source_value']);
+        $spreadsheet->getActiveSheet()->getStyle('C'.$line)->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue('D'.$line, $val['target_value']);
+        $spreadsheet->getActiveSheet()->getStyle('D'.$line)->getAlignment()->setHorizontal('center');
+
+        $spreadsheet->getActiveSheet()
+          ->getStyle('A'.$line.':D'.$line)
+          ->getBorders()->getAllBorders()
+          ->setBorderStyle(Border::BORDER_THIN)
+          ->setColor(new Color('000000'));
+
+        $line++;
+      }
+
+
+      $spreadsheet->getActiveSheet()->getStyle('D6:D3000') ->getAlignment()->setWrapText(true);
+      $spreadsheet->getActiveSheet()->getStyle('E6:E3000') ->getAlignment()->setWrapText(true);
+
+
+      // Create your Office 2007 Excel (XLSX Format)
+      $writer = new Xlsx($spreadsheet);
+
+
+      // Create a Temporary file in the system
+      date_default_timezone_set("Europe/Istanbul");
+      $dateTime = new \DateTime('now');
+      $fileName = 'content_comparison_'.$dateTime->format('d_m_Y_h_i_s').'.xlsx';
+      $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+
+      // Create the excel file in the tmp directory of the system
+      $writer->save($temp_file);
+
+      // Return the excel file as an attachment
+      return $this->file($temp_file, $fileName, ResponseHeaderBag::DISPOSITION_INLINE);
+
+
+      // dump($contents);exit;
+
+    }
 
 
     return new JsonResponse($contents, $responseSource->getStatusCode());
