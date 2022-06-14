@@ -13,7 +13,7 @@ twig:
         'ro': 'Romanian'
       }
       translation_endpoint_paths: {
-        '/api/property-file/ibe/':'Nibe',
+        '/api/property-file/ibe/':'NIBE',
         '/api/property-file/mobile/':'Mobile',
         '/api/property-file/errors/':'Errors',
         '/api/property-file/loyalty/':'Loyalty',
